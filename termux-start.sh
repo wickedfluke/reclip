@@ -53,11 +53,23 @@ echo "Avvio di ReClip sulla porta $PORT..."
 ./reclip.sh > reclip.log 2>&1 &
 RECLIP_PID=$!
 
-sleep 2
+echo "Attendo che ReClip sia pronto (la prima volta può richiedere un po', mentre aggiorna yt-dlp)..."
+READY=0
+for _ in $(seq 1 60); do
+    if ! kill -0 "$RECLIP_PID" 2>/dev/null; then
+        break
+    fi
+    if (exec 3<>"/dev/tcp/127.0.0.1/$PORT") 2>/dev/null; then
+        exec 3>&- 2>/dev/null
+        READY=1
+        break
+    fi
+    sleep 1
+done
 
-if ! kill -0 "$RECLIP_PID" 2>/dev/null; then
+if [ "$READY" != 1 ]; then
     echo ""
-    echo "ReClip non è partito. Ultime righe di reclip.log:"
+    echo "ReClip non è partito in tempo. Ultime righe di reclip.log:"
     tail -n 20 reclip.log 2>/dev/null
     exit 1
 fi
