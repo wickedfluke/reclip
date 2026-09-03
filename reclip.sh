@@ -53,4 +53,4 @@ export PORT
 echo ""
 echo "  ReClip is running at http://localhost:$PORT"
 echo ""
-python3 app.py
+exec python3 app.py

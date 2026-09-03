@@ -36,6 +36,22 @@ Or with Docker:
 docker build -t reclip . && docker run -p 8899:8899 reclip
 ```
 
+### Run on Termux with a Cloudflare Tunnel
+
+To self-host on an Android phone via [Termux](https://termux.dev/) and reach it from outside your home network, without opening any port on your router:
+
+```bash
+pkg update && pkg install python ffmpeg cloudflared git
+# optional, keeps Termux from being suspended when the screen is off
+pkg install termux-api
+
+git clone https://github.com/wickedfluke/reclip.git
+cd reclip
+./termux-start.sh
+```
+
+`termux-start.sh` starts ReClip and a [Cloudflare Quick Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) together, and prints the public `*.trycloudflare.com` URL to use from any device. No Cloudflare account is required, but the URL is random and changes every time the script restarts. Stop everything with `Ctrl+C`.
+
 ## Usage
 
 1. Paste one or more video URLs into the input box
