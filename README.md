@@ -41,7 +41,7 @@ docker build -t reclip . && docker run -p 8899:8899 reclip
 To self-host on an Android phone via [Termux](https://termux.dev/) and reach it from outside your home network, without opening any port on your router:
 
 ```bash
-pkg update && pkg install python ffmpeg cloudflared git
+pkg update && pkg install python ffmpeg yt-dlp cloudflared git
 # optional, keeps Termux from being suspended when the screen is off
 pkg install termux-api
 

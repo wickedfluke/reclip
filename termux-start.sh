@@ -3,7 +3,7 @@
 # Pensato per Termux, ma funziona su qualunque Linux con bash.
 #
 # Setup una tantum su Termux:
-#   pkg update && pkg install python ffmpeg cloudflared
+#   pkg update && pkg install python ffmpeg yt-dlp cloudflared
 #   (facoltativo, evita che Android sospenda Termux a schermo spento)
 #   pkg install termux-api
 #
@@ -55,6 +55,13 @@ RECLIP_PID=$!
 
 sleep 2
 
+if ! kill -0 "$RECLIP_PID" 2>/dev/null; then
+    echo ""
+    echo "ReClip non è partito. Ultime righe di reclip.log:"
+    tail -n 20 reclip.log 2>/dev/null
+    exit 1
+fi
+
 echo "Avvio del tunnel Cloudflare..."
 cloudflared tunnel --url "http://127.0.0.1:$PORT" --no-autoupdate > cloudflared.log 2>&1 &
 TUNNEL_PID=$!
@@ -78,3 +85,15 @@ WATCH_PID=$!
 while kill -0 "$RECLIP_PID" 2>/dev/null && kill -0 "$TUNNEL_PID" 2>/dev/null; do
     sleep 2
 done
+
+if [ "$CLEANED_UP" = 0 ]; then
+    if ! kill -0 "$RECLIP_PID" 2>/dev/null; then
+        echo ""
+        echo "ReClip si è arrestato inaspettatamente. Ultime righe di reclip.log:"
+        tail -n 20 reclip.log 2>/dev/null
+    elif ! kill -0 "$TUNNEL_PID" 2>/dev/null; then
+        echo ""
+        echo "Il tunnel Cloudflare si è arrestato inaspettatamente. Ultime righe di cloudflared.log:"
+        tail -n 20 cloudflared.log 2>/dev/null
+    fi
+fi
