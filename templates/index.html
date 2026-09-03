@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReClip — Free Media Downloader</title>
+  <title>ReClip — Downloader Multimediale Gratuito</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f4f1eb;
-      --fg: #3a3a38;
-      --accent: #e85d2a;
-      --accent-hover: #d04e1f;
-      --muted: #9c9889;
-      --card: #fff;
-      --card-border: #e2ded6;
-      --success: #2d8a4e;
-      --error: #c43d3d;
+      --bg: #0a0a0a;
+      --fg: #eaeae7;
+      --accent: #00d9a3;
+      --accent-hover: #00b386;
+      --muted: #767a78;
+      --card: #151515;
+      --card-border: #2a2a28;
+      --success: #00d9a3;
+      --error: #e5484d;
       --radius: 14px;
-      --shimmer: linear-gradient(90deg, #ebe8e2 25%, #f0ede7 50%, #ebe8e2 75%);
+      --shimmer: linear-gradient(90deg, #1a1a1a 25%, #212121 50%, #1a1a1a 75%);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -83,7 +83,7 @@
     }
     textarea:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(232, 93, 42, 0.08);
+      box-shadow: 0 0 0 3px rgba(0, 217, 163, 0.15);
     }
     textarea::placeholder { color: var(--muted); }
 
@@ -257,9 +257,9 @@
       letter-spacing: 0.03em;
       text-transform: uppercase;
     }
-    .card-dl-btn:hover { background: #2d2d2a; }
+    .card-dl-btn:hover { background: var(--accent); color: #000; }
     .card-dl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .card-dl-btn.done { background: var(--success); color: #fff; }
+    .card-dl-btn.done { background: var(--success); color: #000; }
     .card-dl-btn.error { background: var(--error); color: #fff; }
 
     .card-status {
@@ -269,6 +269,21 @@
     .card-status.downloading { color: var(--accent); }
     .card-status.done { color: var(--success); }
     .card-status.error { color: var(--error); }
+
+    .progress-wrap {
+      width: 100%;
+      height: 6px;
+      border-radius: 4px;
+      background: var(--card-border);
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
 
     .q-chip {
       padding: 4px 10px;
@@ -282,16 +297,16 @@
       transition: all 0.2s;
     }
     .q-chip.active {
-      border-color: var(--fg);
-      color: var(--fg);
-      background: rgba(26,26,24,0.04);
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0,217,163,0.08);
     }
     .q-chip:hover:not(.active) { border-color: var(--muted); }
 
     /* Error card */
     .card.card-error {
-      border-color: rgba(196, 61, 61, 0.2);
-      background: rgba(196, 61, 61, 0.03);
+      border-color: rgba(229, 72, 77, 0.3);
+      background: rgba(229, 72, 77, 0.06);
     }
     .card-error-icon {
       width: 100%;
@@ -299,7 +314,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(196, 61, 61, 0.08);
+      background: rgba(229, 72, 77, 0.12);
       color: var(--error);
     }
     .card-error-icon svg {
@@ -340,7 +355,7 @@
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
-    .dl-all-btn:hover { background: #2d2d2a; }
+    .dl-all-btn:hover { background: var(--accent); color: #000; }
     .dl-all-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .spin {
@@ -384,18 +399,18 @@
   <div class="page">
     <div class="brand">
       <h1>Re<em>Clip</em></h1>
-      <p>Free media downloader</p>
+      <p>Downloader multimediale gratuito</p>
     </div>
 
-    <textarea id="urls" placeholder="Paste one or more URLs..." rows="2"></textarea>
-    <p class="hint">Multiple links? Separate with spaces, commas, or newlines.</p>
+    <textarea id="urls" placeholder="Incolla uno o più link..." rows="2"></textarea>
+    <p class="hint">Più link? Separali con spazi, virgole o a capo.</p>
 
     <div class="controls">
       <div class="pill-group">
         <button class="pill active" data-format="video" onclick="setFormat(this)">MP4</button>
         <button class="pill" data-format="audio" onclick="setFormat(this)">MP3</button>
       </div>
-      <button class="fetch-btn" id="goBtn" onclick="go()">Fetch</button>
+      <button class="fetch-btn" id="goBtn" onclick="go()">Cerca</button>
     </div>
 
     <div id="cards" class="cards"></div>
@@ -403,7 +418,7 @@
     <div class="footer">
       YouTube &middot; TikTok &middot; Instagram &middot; Twitter/X &middot; Reddit &middot; Facebook<br>
       Vimeo &middot; Twitch &middot; Dailymotion &middot; SoundCloud &middot; Loom &middot; Streamable<br>
-      Pinterest &middot; Tumblr &middot; Threads &middot; LinkedIn &middot; 1000+ more
+      Pinterest &middot; Tumblr &middot; Threads &middot; LinkedIn &middot; oltre 1000 altri
     </div>
   </div>
 
@@ -435,15 +450,15 @@
     }
 
     function friendlyError(err) {
-      if (err.includes('Unsupported URL')) return 'This URL is not supported';
-      if (err.includes('Video unavailable')) return 'Video is unavailable or private';
-      if (err.includes('Private video')) return 'This video is private';
-      if (err.includes('HTTP Error 403')) return 'Access denied by the platform';
-      if (err.includes('HTTP Error 404')) return 'Video not found';
-      if (err.includes('copyright')) return 'Video blocked due to copyright';
-      if (err.includes('geo')) return 'Video not available in your region';
-      if (err.includes('timed out') || err.includes('Timed out')) return 'Request timed out — try again';
-      if (err.includes('network') || err.includes('Network')) return 'Network error — check your connection';
+      if (err.includes('Unsupported URL')) return 'Questo URL non è supportato';
+      if (err.includes('Video unavailable')) return 'Il video non è disponibile o è privato';
+      if (err.includes('Private video')) return 'Questo video è privato';
+      if (err.includes('HTTP Error 403')) return 'Accesso negato dalla piattaforma';
+      if (err.includes('HTTP Error 404')) return 'Video non trovato';
+      if (err.includes('copyright')) return 'Video bloccato per violazione del copyright';
+      if (err.includes('geo')) return 'Video non disponibile nella tua regione';
+      if (err.includes('timed out') || err.includes('Timed out')) return 'Richiesta scaduta — riprova';
+      if (err.includes('network') || err.includes('Network')) return 'Errore di rete — controlla la connessione';
       return err.length > 80 ? err.slice(0, 80) + '...' : err;
     }
 
@@ -458,7 +473,7 @@
       const btn = document.getElementById('goBtn');
       const container = document.getElementById('cards');
       btn.disabled = true;
-      btn.textContent = 'Loading...';
+      btn.textContent = 'Caricamento...';
       container.innerHTML = '';
       cardData = [];
 
@@ -516,7 +531,7 @@
       }
 
       btn.disabled = false;
-      btn.textContent = 'Fetch';
+      btn.textContent = 'Cerca';
     }
 
     function renderCard(idx) {
@@ -552,7 +567,7 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="card-title" style="color:var(--error)">Could not fetch video</div>
+            <div class="card-title" style="color:var(--error)">Impossibile recuperare il video</div>
             <div class="card-error-msg">${esc(friendlyError(c.error || ''))}</div>
             <div class="card-error-url">${esc(c.url)}</div>
           </div>
@@ -581,23 +596,27 @@
       }
 
       let actionHtml = '';
+      let progressHtml = '';
       if (c.status === 'ready') {
-        actionHtml = `<button class="card-dl-btn" onclick="dlCard(${idx})">Download</button>${qualityChips}`;
+        actionHtml = `<button class="card-dl-btn" onclick="dlCard(${idx})">Scarica</button>${qualityChips}`;
       } else if (c.status === 'downloading') {
-        actionHtml = `<span class="card-status downloading"><span class="spin"></span> Downloading...</span>`;
+        const pct = Math.max(0, Math.min(100, Math.round(c.progress || 0)));
+        progressHtml = `<div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>`;
+        actionHtml = `<span class="card-status downloading"><span class="spin"></span> Download in corso... ${pct}%</span>`;
       } else if (c.status === 'done') {
-        actionHtml = `<button class="card-dl-btn done" onclick="saveCard(${idx})">Save</button>
+        actionHtml = `<button class="card-dl-btn done" onclick="saveCard(${idx})">Salva</button>
           <span class="card-status done">${esc(c.filename || '')}</span>`;
       } else if (c.status === 'error') {
-        actionHtml = `<button class="card-dl-btn" onclick="dlCard(${idx})">Retry</button>
-          <span class="card-status error">${esc(friendlyError(c.error || 'Download failed'))}</span>`;
+        actionHtml = `<button class="card-dl-btn" onclick="dlCard(${idx})">Riprova</button>
+          <span class="card-status error">${esc(friendlyError(c.error || 'Download non riuscito'))}</span>`;
       }
 
       el.innerHTML = `
         <div class="card-thumb">${thumbHtml}</div>
         <div class="card-body">
-          <div class="card-title">${esc(c.title || 'Untitled')}</div>
+          <div class="card-title">${esc(c.title || 'Senza titolo')}</div>
           <div class="card-meta">${esc(c.uploader)}${c.duration ? ' · ' + fmtDur(c.duration) : ''}</div>
+          ${progressHtml}
           <div class="card-actions">${actionHtml}</div>
         </div>
       `;
@@ -610,7 +629,7 @@
       const bar = document.createElement('div');
       bar.id = 'dl-all-bar';
       bar.className = 'dl-all-bar';
-      bar.innerHTML = `<button class="dl-all-btn" onclick="dlAll()">Download All</button>`;
+      bar.innerHTML = `<button class="dl-all-btn" onclick="dlAll()">Scarica tutto</button>`;
       document.getElementById('cards').appendChild(bar);
     }
 
@@ -623,6 +642,7 @@
       const c = cardData[idx];
       c.status = 'downloading';
       c.error = null;
+      c.progress = 0;
       renderCard(idx);
 
       try {
@@ -658,6 +678,10 @@
         try {
           const res = await fetch(`/api/status/${c.jobId}`);
           const data = await res.json();
+          if (typeof data.progress === 'number' && data.status === 'downloading') {
+            c.progress = data.progress;
+            renderCard(idx);
+          }
           if (data.status === 'done') {
             clearInterval(iv);
             c.status = 'done';
@@ -673,7 +697,7 @@
         } catch {
           clearInterval(iv);
           c.status = 'error';
-          c.error = 'Lost connection to server';
+          c.error = 'Connessione al server persa';
           renderCard(idx);
         }
       }, 1000);
@@ -690,7 +714,7 @@
 
     async function dlAll() {
       const btn = document.querySelector('.dl-all-btn');
-      if (btn) { btn.disabled = true; btn.textContent = 'Downloading...'; }
+      if (btn) { btn.disabled = true; btn.textContent = 'Download in corso...'; }
 
       for (let i = 0; i < cardData.length; i++) {
         if (cardData[i].status === 'ready') {
@@ -698,7 +722,7 @@
         }
       }
 
-      if (btn) { btn.disabled = false; btn.textContent = 'Download All'; }
+      if (btn) { btn.disabled = false; btn.textContent = 'Scarica tutto'; }
     }
   </script>
 </body>

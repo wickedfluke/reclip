@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 import glob
 import json
@@ -29,11 +30,15 @@ def parse_ytdlp_json(stdout):
     raise ValueError("yt-dlp returned no data")
 
 
+PROGRESS_RE = re.compile(r"\[download\]\s+(\d{1,3}(?:\.\d+)?)%")
+
+
 def run_download(job_id, url, format_choice, format_id):
     job = jobs[job_id]
+    job["progress"] = 0
     out_template = os.path.join(DOWNLOAD_DIR, f"{job_id}.%(ext)s")
 
-    cmd = ["yt-dlp", "--no-playlist", "-o", out_template]
+    cmd = ["yt-dlp", "--no-playlist", "--newline", "--no-color", "-o", out_template]
 
     if format_choice == "audio":
         cmd += ["-x", "--audio-format", "mp3"]
@@ -44,12 +49,43 @@ def run_download(job_id, url, format_choice, format_id):
 
     cmd.append(url)
 
+    output_lines = []
+    timed_out = {"flag": False}
+    proc = None
+
+    def kill_on_timeout():
+        timed_out["flag"] = True
+        if proc:
+            proc.kill()
+
+    timer = threading.Timer(300, kill_on_timeout)
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-        if result.returncode != 0:
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
+        )
+        timer.start()
+        for line in proc.stdout:
+            output_lines.append(line)
+            match = PROGRESS_RE.search(line)
+            if match:
+                job["progress"] = float(match.group(1))
+        proc.wait()
+    finally:
+        timer.cancel()
+
+    try:
+        if timed_out["flag"]:
             job["status"] = "error"
-            job["error"] = result.stderr.strip().split("\n")[-1]
+            job["error"] = "Download timed out (5 min limit)"
             return
+
+        if proc.returncode != 0:
+            job["status"] = "error"
+            last_line = next((l.strip() for l in reversed(output_lines) if l.strip()), "Download failed")
+            job["error"] = last_line
+            return
+
+        job["progress"] = 100
 
         files = glob.glob(os.path.join(DOWNLOAD_DIR, f"{job_id}.*"))
         if not files:
@@ -81,9 +117,6 @@ def run_download(job_id, url, format_choice, format_id):
             job["filename"] = f"{safe_title}{ext}" if safe_title else os.path.basename(chosen)
         else:
             job["filename"] = os.path.basename(chosen)
-    except subprocess.TimeoutExpired:
-        job["status"] = "error"
-        job["error"] = "Download timed out (5 min limit)"
     except Exception as e:
         job["status"] = "error"
         job["error"] = str(e)
@@ -193,6 +226,7 @@ def check_status(job_id):
         "status": job["status"],
         "error": job.get("error"),
         "filename": job.get("filename"),
+        "progress": job.get("progress", 0),
     })
 
 
